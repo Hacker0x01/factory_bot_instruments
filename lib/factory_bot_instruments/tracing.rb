@@ -7,31 +7,7 @@ module FactoryBot
     alias_method :original_run, :run
 
     def run(build_strategy, overrides, &block)
-      # unfortunately there's no direct way to go from a strategy class to a strategy
-      # name so instead there's this ugliness.
-      @strategies ||= FactoryBot.strategies.instance_variable_get(:@items)
-
-      # @strategies is now a hash which looks like this by default, see
-      # https://github.com/thoughtbot/factory_bot/blob/master/lib/factory_bot/internal.rb
-      #
-      # {
-      #   build: FactoryBot::Strategy::Build,
-      #   create: FactoryBot::Strategy::Create,
-      #   attributes_for: FactoryBot::Strategy::AttributesFor,
-      #   build_stubbed: FactoryBot::Strategy::Stub,
-      #   null: FactoryBot::Strategy::Null,
-      # }
-
-      if @strategies.key?(build_strategy)
-        # sometimes build_strategy is a key, ie :create
-        label = build_strategy
-      elsif @strategies.key(build_strategy)
-        # sometimes build_strategy is a value, ie FactoryBot::Strategy::Create
-        label = @strategies.key(build_strategy)
-      else
-        # failsafe - shouldn't ever get here
-        label = build_strategy
-      end
+      label = FactoryBot.strategy_by_name(build_strategy)
 
       if $FACTORY_BOT_INSTRUMENTS_TRACING
         depth     = "|  " * $FACTORY_BOT_INSTRUMENTS_TRACING_DEPTH
